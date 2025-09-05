@@ -273,103 +273,103 @@ def fix_biome_condition(trace, json_data):
         iterate_through_fields(trace.copy(), type, json_data, docconditions.biome_conditions)
         if type == "origins:category":
             if json_data["category"] == "beach":
-                json_data["category"].pop()
+                json_data.pop("category")
                 json_data["tag"] = "minecraft:is_beach"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category beach to minecraft:is_beach tag")
-            if json_data["category"] == "desert":
-                json_data["category"].pop()
+            elif json_data["category"] == "desert":
+                json_data.pop("category")
                 json_data["tag"] = "c:desert"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category desert to c:desert tag")
                 log("WARNING", trace, "This tag will only work on fabric")
-            if json_data["category"] == "extreme_hills":
-                json_data["category"].pop()
+            elif json_data["category"] == "extreme_hills":
+                json_data.pop("category")
                 json_data["tag"] = "minecraft:is_hill"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category extreme_hills to minecraft:is_hill tag")
-            if json_data["category"] == "forest":
-                json_data["category"].pop()
+            elif json_data["category"] == "forest":
+                json_data.pop("category")
                 json_data["tag"] = "minecraft:is_forest"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category forest to minecraft:is_forest tag")
-            if json_data["category"] == "icy":
-                json_data["category"].pop()
+            elif json_data["category"] == "icy":
+                json_data.pop("category")
                 json_data["tag"] = "c:is_icy"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category icy to c:is_icy tag")
                 log("WARNING", trace, "This tag will only work on fabric")
-            if json_data["category"] == "jungle":
-                json_data["category"].pop()
+            elif json_data["category"] == "jungle":
+                json_data.pop("category")
                 json_data["tag"] = "minecraft:is_jungle"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category jungle to minecraft:is_jungle tag")
-            if json_data["category"] == "mesa":
-                json_data["category"].pop()
+            elif json_data["category"] == "mesa":
+                json_data.pop("category")
                 json_data["tag"] = "minecraft:is_badlands"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category mesa to minecraft:is_badlands tag")
-            if json_data["category"] == "mountain":
-                json_data["category"].pop()
+            elif json_data["category"] == "mountain":
+                json_data.pop("category")
                 json_data["tag"] = "minecraft:is_mountain"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category mountain to minecraft:is_mountain tag")
-            if json_data["category"] == "mushroom":
-                json_data["category"].pop()
+            elif json_data["category"] == "mushroom":
+                json_data.pop("category")
                 json_data["tag"] = "c:is_mushroom"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category mushroom to c:is_mushroom tag")
                 log("WARNING", trace, "This tag will only work on fabric")
-            if json_data["category"] == "nether":
-                json_data["category"].pop()
+            elif json_data["category"] == "nether":
+                json_data.pop("category")
                 json_data["tag"] = "minecraft:is_nether"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category nether to minecraft:is_nether tag")
-            if json_data["category"] == "none":
-                json_data["category"].pop()
+            elif json_data["category"] == "none":
+                json_data.pop("category")
                 json_data["tag"] = "c:is_void"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category none to c:is_void tag")
                 log("WARNING", trace, "This tag will only work on fabric")
-            if json_data["category"] == "ocean":
-                json_data["category"].pop()
+            elif json_data["category"] == "ocean":
+                json_data.pop("category")
                 json_data["tag"] = "minecraft:is_ocean"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category ocean to minecraft:is_ocean tag")
-            if json_data["category"] == "plains":
-                json_data["category"].pop()
+            elif json_data["category"] == "plains":
+                json_data.pop("category")
                 json_data["tag"] = "c:is_plains"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category plains to c:is_plains tag")
                 log("WARNING", trace, "This tag will only work on fabric")
-            if json_data["category"] == "river":
-                json_data["category"].pop()
+            elif json_data["category"] == "river":
+                json_data.pop("category")
                 json_data["tag"] = "minecraft:is_river"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category river to minecraft:is_river tag")
-            if json_data["category"] == "savanna":
-                json_data["category"].pop()
+            elif json_data["category"] == "savanna":
+                json_data.pop("category")
                 json_data["tag"] = "minecraft:is_savanna"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category savanna to minecraft:is_savanna tag")
-            if json_data["category"] == "swamp":
-                json_data["category"].pop()
+            elif json_data["category"] == "swamp":
+                json_data.pop("category")
                 json_data["tag"] = "c:is_swamp"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category swamp to c:is_swamp tag")
                 log("WARNING", trace, "This tag will only work on fabric")
-            if json_data["category"] == "taiga":
-                json_data["category"].pop()
+            elif json_data["category"] == "taiga":
+                json_data.pop("category")
                 json_data["tag"] = "minecraft:is_taiga"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category taiga to minecraft:is_taiga tag")
-            if json_data["category"] == "the_end":
-                json_data["category"].pop()
+            elif json_data["category"] == "the_end":
+                json_data.pop("category")
                 json_data["tag"] = "minecraft:is_end"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category the_end to minecraft:is_end tag")
-            if json_data["category"] == "underground":
-                json_data["category"].pop()
+            elif json_data["category"] == "underground":
+                json_data.pop("category")
                 json_data["tag"] = "c:is_underground"
                 json_data["type"] = "origins:in_tag"
                 log("INFO", trace, "Updated biome category underground to c:is_underground tag")
@@ -519,6 +519,10 @@ def iterate_through_fields(trace, type, json_data, shape_data, meta_type = None)
 
 def fix_power(trace, json_data):
     type = get_type(json_data)
+    if "condition" in json_data:
+        condition = json_data["condition"]
+        fix_entity_condition(trace, condition)
+        json_data["condition"] = condition
     if type == "origins:overlay":
         if "texture" in json_data:
             #path = os.path(json_data["texture"])
