@@ -12,23 +12,10 @@ from originpy import docconditions
 # [apoli] The Targets item NBT has been converted into an origins:origin item component. It also now works for any item that doesn't have any use actions (previously, it only worked for the Orb of Origin item.) 
 # [apoli] The consuming_time_modifier(s) field(s) of the edible_item power type has been moved to the modify_food power type and renamed to eat_ticks_modifier(s) for consistency.
 # Items stacks im missing pretty sure
-# Probably other data
 # Update pack format
 # [apoli] Removed the material block condition type since it has been deprecated for quite some time (since 1.20.) Use block tags to classify blocks in their own groups/materials and use the in_tag block condition type instead.
-# [apoli] Removed any fields/types that use the legacy damage source data type since it has been deprecated for quite some time (since 1.19.4.) Use damage types and vanilla damage type tags to control the properties of a damage source.
+# [apoli] Removed any fields/types that use the legacy damage source data type since it has been deprecated for quite some time (since 1.19.4.) Use damage types and vanilla damage type tags to control the properties of a damage source. Partly done
 # [apoli] Removed the client and server boolean fields from the add_velocity entity/bi-entity action types since its usage is redundant. Use the side meta action type instead.
-# [apoli] The following aliases have been removed: (they have to be checked in case they have been re-added)
-#    action_on_set ID path alias for action_on_entity_set entity action type.
-#    add_to_set ID path alias for add_to_entity_set entity action type.
-#    remove_from_set ID path alias for remove_from_entity_set bi-entity action type.
-#    in_set ID path alias for in_entity_set bi-entity condition type.
-#    set_size ID path alias for entity_set_size entity condition type.
-#    is_damageable ID path alias for damageable item condition type.
-#    is_equippable ID path alias for equippable item condition type.
-#    fireproof ID path alias for fire_resistant item condition type.
-#    addition alias for apoli:add_base_early attribute modifier operation.
-#    multiply_base alias for apoli:multiply_base_additive attribute modifier operation.
-#    multiply_total alias for apoli:multiply_total_multiplicative attribute modifier operation.
 # Texture id changes
 
 
@@ -136,6 +123,15 @@ def get_namespaces(folder_path):
     folders, _ = get_items_from_folder(folder_path)
     return folders
 
+def fix_damage(trace, type, json_data): 
+    if "damage_type" not in json_data:
+        if "source" in json_data:
+            #TODO: Add the damage type to the tag directly, and make damage type directly. Detect existing damage types.
+            log("WARNING", trace, "Fixing damage types is unimplemented.")
+        else:
+            log("ERROR", trace, "Couldn't find damage source")
+
+
 def fix_meta_action(trace, type, json_data):
     if type == "origins:chance":
         if "action" in json_data:
@@ -149,6 +145,9 @@ def fix_entity_action(trace, json_data):
         iterate_through_fields(trace.copy(), type, json_data, docactions.meta_actions, "Entity")
     elif type in docactions.entity_actions:
         iterate_through_fields(trace.copy(), type, json_data, docactions.entity_actions)
+        if type == "origins:action_on_set":
+            json_data["type"] = "origins:action_on_entity_set"
+            log("INFO", trace, "Renamed action_on_set to action_on_entity_set")
         # This has to be after the iteration so the effects update
         if type == "origins:spawn_effect_cloud":
             if "effect" in json_data:
@@ -158,6 +157,8 @@ def fix_entity_action(trace, json_data):
                 effects = json_data.pop("effects")
                 json_data["effect_component"] = {"custom_effects": effects}
             log("INFO", trace, "Updated action spawn effect cloud to use components")
+        if type == "origins:damage":
+            fix_damage(trace, type, json_data)
 
 def fix_bientity_action(trace, json_data):
     type = get_type(json_data)
@@ -166,6 +167,14 @@ def fix_bientity_action(trace, json_data):
         iterate_through_fields(trace.copy(), type, json_data, docactions.meta_actions, "Bi-entity")
     elif type in docactions.bientity_actions:
         iterate_through_fields(trace.copy(), type, json_data, docactions.bientity_actions)
+        if type == "origins:add_to_set":
+            json_data["type"] = "origins:add_to_entity_set"
+            log("INFO", trace, "Renamed add_to_set to add_to_entity_set")
+        if type == "origins:remove_from_set":
+            json_data["type"] = "origins:remove_from_entity_set"
+            log("INFO", trace, "Renamed remove_from_set to remove_from_entity_set")
+        if type == "origins:damage":
+            fix_damage(trace, type, json_data)
 
 def fix_block_action(trace, json_data):
     type = get_type(json_data)
@@ -210,6 +219,9 @@ def fix_entity_condition(trace, json_data):
             else:
                 log("ERROR", trace, "Entity Group not found, was unable to find correct tag.")
             json_data = rename_key(json_data, "group", "tag")
+        if type == "origins:set_size":
+            json_data["type"] = "origins:entity_set_size"
+            log("INFO", trace, "Renamed set_size to entity_set_size")
 
 def fix_bientity_condition(trace, json_data):
     type = get_type(json_data)
@@ -218,6 +230,9 @@ def fix_bientity_condition(trace, json_data):
         iterate_through_fields(trace.copy(), type, json_data, docconditions.meta_conditions, "Bi-entity")
     elif type in docconditions.bientity_conditions:
         iterate_through_fields(trace.copy(), type, json_data, docconditions.bientity_conditions)
+        if type == "origins:in_set":
+            json_data["type"] = "origins:in_entity_set"
+            log("INFO", trace, "Renamed in_set to in_entity_set")
 
 def fix_block_condition(trace, json_data):
     type = get_type(json_data)
@@ -254,6 +269,15 @@ def fix_item_condition(trace, json_data):
             json_data["type"] = "origins:ingredient",
             json_data["ingredient"] = {"tag": "minecraft:wolf_food"}
             log("INFO", trace, "Updated meat item condition to use the minecraft:wolf_food tag instead")
+        if type == "origins:is_damageable":
+            json_data["type"] = "origins:damageable"
+            log("INFO", trace, "Renamed is_damageable to damageable")
+        if type == "origins:is_equippable":
+            json_data["type"] = "origins:equippable"
+            log("INFO", trace, "Renamed is_equippable to equippable")
+        if type == "origins:fireproof":
+            json_data["type"] = "origins:fire_resistant"
+            log("INFO", trace, "Renamed fireproof to fire_resistant")
 
 
 def fix_damage_condition(trace, json_data):
