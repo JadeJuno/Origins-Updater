@@ -644,25 +644,25 @@ def update_folders(trace, path):
             os.rename(os.path.join(tagfolder, "functions"), os.path.join(tagfolder, "function"))
             log("INFO", trace, "Renamed folder tags/functions to tags/function")
     if "structures" in folders:
-        os.rename(os.path.join(tagfolder, "structures"), os.path.join(tagfolder, "structure"))
+        os.rename(os.path.join(path, "structures"), os.path.join(path, "structure"))
         log("INFO", trace, "Renamed folder structures to structure")
     if "advancements" in folders:
-        os.rename(os.path.join(tagfolder, "advancements"), os.path.join(tagfolder, "advancement"))
+        os.rename(os.path.join(path, "advancements"), os.path.join(path, "advancement"))
         log("INFO", trace, "Renamed folder advancements to advancement")
     if "recipes" in folders:
-        os.rename(os.path.join(tagfolder, "recipes"), os.path.join(tagfolder, "recipe"))
+        os.rename(os.path.join(path, "recipes"), os.path.join(path, "recipe"))
         log("INFO", trace, "Renamed folder recipes to recipe")
     if "loot_tables" in folders:
-        os.rename(os.path.join(tagfolder, "loot_tables"), os.path.join(tagfolder, "loot_table"))
+        os.rename(os.path.join(path, "loot_tables"), os.path.join(path, "loot_table"))
         log("INFO", trace, "Renamed folder loot_tables to loot_table")
     if "predicates" in folders:
-        os.rename(os.path.join(tagfolder, "predicates"), os.path.join(tagfolder, "predicate"))
+        os.rename(os.path.join(path, "predicates"), os.path.join(path, "predicate"))
         log("INFO", trace, "Renamed folder predicates to predicate")
     if "item_modifiers" in folders:
-        os.rename(os.path.join(tagfolder, "item_modifiers"), os.path.join(tagfolder, "item_modifier"))
+        os.rename(os.path.join(path, "item_modifiers"), os.path.join(path, "item_modifier"))
         log("INFO", trace, "Renamed folder item_modifiers to item_modifier")
     if "functions" in folders:
-        os.rename(os.path.join(tagfolder, "functions"), os.path.join(tagfolder, "function"))
+        os.rename(os.path.join(path, "functions"), os.path.join(path, "function"))
         log("INFO", trace, "Renamed folder functions to function")
 
 def start_updating(folder_path):
