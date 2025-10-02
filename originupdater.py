@@ -475,6 +475,84 @@ def fix_food_component(trace, json_data):
 def fix_crafting_recipe(trace, json_data):
     log("ERROR", trace, "Fixing crafting recipes is unimplemented.")
 
+def fix_particle_effect(trace, json_data):
+    old_params = json_data['params']
+
+    if json_data['type'] in {"block", "minecraft:block", "block_marker", "minecraft:block_marker", "falling_dust", "minecraft:falling_dust"}:
+        pattern_blockstate = re.compile(r"^(?P<block>[a-z0-9/._-]+)(?:\[(?P<props>[a-z0-9/._-]+= [a-z0-9/._-]+(?:,[a-z0-9/._-]+= [a-z0-9/._-]+)*)])?$")
+        pattern_props = re.compile(r"(?P<property>[a-z0-9/._-]+)=(?P<value>[a-z0-9/._-]+)")
+
+        match = pattern_blockstate.match(old_params)
+        block = match.group("block")
+        prop_str = match.group("props")
+        new_params = {"block_state": {"Name": block}}
+        if prop_str:
+            properties = {}
+            for prop_match in pattern_props.finditer(prop_str):
+                state = prop_match.groupdict()
+                if state["value"] == 'true':
+                    state["value"] = True
+                elif state["value"] == 'false':
+                    state["value"] = False
+                elif state["value"].isnumeric():
+                    state["value"] = float(state["value"])
+
+                properties.update({state["property"]: state['value']})
+            new_params["Properties"] = properties
+
+        elif json_data in {'dragon_breath', 'minecraft:dragon_breath'}:
+            new_params = {"power": float(old_params)}
+
+    elif json_data['type'] in {"dust", "minecraft:dust"}:
+        pattern = re.compile(r"(?P<red>\d(\.\d+)?) (?P<green>\d(\.\d+)?) (?P<blue>\d(\.\d+)?) (?P<scale>\d(\.\d+)?)")
+        groups = pattern.match(old_params).groupdict()
+        new_params = {
+            "color": [
+                float(groups['red']),
+                float(groups['green']),
+                float(groups['blue'])
+            ],
+            "scale": float(groups['scale'])
+        }
+
+    elif json_data['type'] in {"dust_color_transition", "minecraft:dust_color_transition"}:
+        pattern = re.compile(r"(?P<from_red>\d(\.\d+)?) (?P<from_green>\d(\.\d+)?) (?P<from_blue>\d(\.\d+)?) (?P<scale>\d(\.\d+)?) (?P<to_red>\d(\.\d+)?) (?P<to_green>\d(\.\d+)?) (?P<to_blue>\d(\.\d+)?)")  # Ugly...
+        groups = pattern.match(old_params).groupdict()
+        new_params = {
+            "from_color": [
+                float(groups['from_red']),
+                float(groups['from_green']),
+                float(groups['from_blue'])
+            ],
+            "to_color":   [
+                float(groups['to_red']),
+                float(groups['to_green']),
+                float(groups['to_blue'])
+            ],
+            "scale":      float(groups['scale'])
+        }
+
+    elif json_data['type'] in {"item", "minecraft:item"}:
+        new_params = {"item": {"id": old_params}}
+
+    elif json_data['type'] in {"sculk_charge", "minecraft:sculk_charge"}:
+        new_params = {"roll": float(old_params)}
+
+    elif json_data['type'] in {"shriek", "minecraft:shriek"}:
+        new_params = {"delay": float(old_params)}
+
+    elif json_data['type'] in {"vibration", "minecraft:vibration"}:
+        pattern = re.compile(r"(?P<posX>\d(\.\d+)?) (?P<posY>\d(\.\d+)?) (?P<posZ>\d(\.\d+)?) (?P<delay>\d(\.\d+)?)")
+        groups = pattern.match(old_params).groupdict()
+        new_params = {"type": "block", "pos": [groups['posX'], groups['posY'], groups['posZ']], "arrival_in_ticks": float(groups['delay'])}
+
+    else:
+        new_params = old_params  # Fallback
+
+    json_data["params"] = new_params
+    log("INFO", trace, f'Updated params for "{json_data['type']}" particle.')
+
+
 def select_type(trace, type, field_data, meta_type = None):
     if type == "Entity Action Type" and is_json_object(field_data):
         fix_entity_action(trace.copy(), field_data)
@@ -508,6 +586,8 @@ def select_type(trace, type, field_data, meta_type = None):
         fix_food_component(trace.copy(), field_data)
     if type == "Crafting Recipe" and is_json_object(field_data):
         fix_crafting_recipe(trace.copy(), field_data)
+    if type == "Particle Effect" and is_json_object(field_data):
+        fix_particle_effect(trace.copy(), field_data)
     if type == "Action Type" and is_json_object(field_data):
         select_type(trace, field_data, meta_type + " Action Type")
     if type == "Condition Type" and is_json_object(field_data):
