@@ -589,9 +589,11 @@ def select_type(trace, type, field_data, meta_type = None):
     if type == "Particle Effect" and is_json_object(field_data):
         fix_particle_effect(trace.copy(), field_data)
     if type == "Action Type" and is_json_object(field_data):
-        select_type(trace, field_data, meta_type + " Action Type")
+        select_type(trace, meta_type + " Action Type", field_data)
     if type == "Condition Type" and is_json_object(field_data):
-        select_type(trace, field_data, meta_type + " Condition Type")
+        select_type(trace, meta_type + " Condition Type", field_data)
+
+
 # Its given a list of dicts that indicate if the field is an array and what type it is
 # then fixes it
 def find_allowed_types(trace, allowed_types, field_data, meta_type = None):
