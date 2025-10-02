@@ -479,7 +479,7 @@ def fix_particle_effect(trace, json_data):
     old_params = json_data['params']
 
     if json_data['type'] in {"block", "minecraft:block", "block_marker", "minecraft:block_marker", "falling_dust", "minecraft:falling_dust"}:
-        pattern_blockstate = re.compile(r"^(?P<block>[a-z0-9/._-]+)(?:\[(?P<props>[a-z0-9/._-]+= [a-z0-9/._-]+(?:,[a-z0-9/._-]+= [a-z0-9/._-]+)*)])?$")
+        pattern_blockstate = re.compile(r"^(?P<block>[a-z0-9/:._-]+)(?:\[(?P<props>[a-z0-9/._-]+=[a-z0-9/._-]+(?:,\s+[a-z0-9/._-]+=[a-z0-9/._-]+)*)])?$")
         pattern_props = re.compile(r"(?P<property>[a-z0-9/._-]+)=(?P<value>[a-z0-9/._-]+)")
 
         match = pattern_blockstate.match(old_params)
@@ -500,8 +500,8 @@ def fix_particle_effect(trace, json_data):
                 properties.update({state["property"]: state['value']})
             new_params["Properties"] = properties
 
-        elif json_data in {'dragon_breath', 'minecraft:dragon_breath'}:
-            new_params = {"power": float(old_params)}
+    elif json_data['type'] in {'dragon_breath', 'minecraft:dragon_breath'}:
+        new_params = {"power": float(old_params)}
 
     elif json_data['type'] in {"dust", "minecraft:dust"}:
         pattern = re.compile(r"(?P<red>\d(\.\d+)?) (?P<green>\d(\.\d+)?) (?P<blue>\d(\.\d+)?) (?P<scale>\d(\.\d+)?)")
@@ -542,9 +542,9 @@ def fix_particle_effect(trace, json_data):
         new_params = {"delay": float(old_params)}
 
     elif json_data['type'] in {"vibration", "minecraft:vibration"}:
-        pattern = re.compile(r"(?P<posX>\d(\.\d+)?) (?P<posY>\d(\.\d+)?) (?P<posZ>\d(\.\d+)?) (?P<delay>\d(\.\d+)?)")
+        pattern = re.compile(r"(?P<posX>\d+(\.\d+)?) (?P<posY>\d+(\.\d+)?) (?P<posZ>\d+(\.\d+)?) (?P<delay>\d+(\.\d+)?)")
         groups = pattern.match(old_params).groupdict()
-        new_params = {"type": "block", "pos": [groups['posX'], groups['posY'], groups['posZ']], "arrival_in_ticks": float(groups['delay'])}
+        new_params = {"destination": {"type": "block", "pos": [float(groups['posX']), float(groups['posY']), float(groups['posZ'])]}, "arrival_in_ticks": float(groups['delay'])}
 
     else:
         new_params = old_params  # Fallback
