@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import zipfile
 import shutil
@@ -550,7 +551,7 @@ def fix_particle_effect(trace, json_data):
         new_params = old_params  # Fallback
 
     json_data["params"] = new_params
-    log("INFO", trace, f'Updated params for "{json_data['type']}" particle.')
+    log("INFO", trace, f'Updated params for "{json_data["type"]}" particle.')
 
 
 def select_type(trace, type, field_data, meta_type = None):
@@ -624,6 +625,7 @@ def iterate_through_fields(trace, type, json_data, shape_data, meta_type = None)
             json_data[field_name] = field_data
 
 def fix_power(trace, json_data):
+    log("INFO", trace, "Fixing power")
     type = get_type(json_data)
     if "condition" in json_data:
         condition = json_data["condition"]
