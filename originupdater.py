@@ -764,9 +764,15 @@ def start_updating(folder_path):
         update_folders(trace.copy(), path)
 
 def open_datapack():
-    folder = input("Enter the folder path: ").strip()
-    # If .zip is specified, open the zip
-    if folder.endswith(".zip") and os.path.isfile(folder):
+    answer = input("Is the datapack zipped? (Y/N)\n> ").lower().strip()
+    if answer == "y":
+        folder = filedialog.askopenfilename(title="Select datapack ZIP File", filetypes={('ZIP File', '.zip')})
+        is_zip = True
+    else:
+        folder = filedialog.askdirectory(title="Select folder to create a symlink to")
+        is_zip = False
+
+    if is_zip:
         zip_path = folder
         folder, _ = os.path.splitext(folder)
         unzip_datapack(zip_path, folder)
