@@ -476,7 +476,10 @@ def fix_crafting_recipe(trace, json_data):
     log("ERROR", trace, "Fixing crafting recipes is unimplemented.")
 
 def fix_particle_effect(trace, json_data):
-    old_params = json_data['params']
+    try:
+        old_params = json_data['params']
+    except KeyError:
+        return
 
     if json_data['type'] in {"block", "minecraft:block", "block_marker", "minecraft:block_marker", "falling_dust", "minecraft:falling_dust"}:
         pattern_blockstate = re.compile(r"^(?P<block>[a-z0-9/:._-]+)(?:\[(?P<props>[a-z0-9/._-]+=[a-z0-9/._-]+(?:,\s+[a-z0-9/._-]+=[a-z0-9/._-]+)*)])?$")
