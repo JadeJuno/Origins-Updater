@@ -1,10 +1,15 @@
-import os
 import json
-import zipfile
+import os
+import re
 import shutil
-from originpy import docpowers
+import zipfile
+from pathlib import Path
+from tkinter import filedialog
+
 from originpy import docactions
 from originpy import docconditions
+from originpy import docpowers
+
 
 # TODO:
 # [calio] Item stacks now has components field instead of tag field, which accepts an object with key-value pairs that specifies which components will be added/removed (if prefixed with !) to/from the item stack. 
