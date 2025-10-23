@@ -30,9 +30,10 @@ def log(type, trace, text):
         file = trace["file"]
     if "fields" in trace and trace["fields"] != "":
         fields = trace["fields"]
-        print("[" + type + "] " + "File: " + file + " in " + fields + ": " + text) 
+        print(f"[{type}] File: {file} in {fields}: {text}")
     else:
-        print("[" + type + "] " + "File: " + file + ": " + text) 
+        print(f"[{type}] File: {file}: {text}")
+
 
 def rename_key(d, old_key, new_key):
     """Renames a key in a dictionary."""
@@ -44,13 +45,13 @@ def get_items_from_folder(folder_path):
     """Returns a list of folders and another of files inside the given folder."""
     files = []
     folders = []
-    with os.scandir(folder_path) as entries:
-        for entry in entries:
-            if entry.is_file():
-                files.append(entry.name)
-            elif entry.is_dir():
-                folders.append(entry.name)
-    return folders, files
+    for entry in folder_path.iterdir():
+        if entry.is_file():
+            files.append(entry)
+        elif entry.is_dir():
+            folders.append(entry)
+    return [folder.name for folder in folders], [file.name for file in files]
+
 
 def get_items_from_all_folders(folder_path):
     """
@@ -59,12 +60,12 @@ def get_items_from_all_folders(folder_path):
     """
     retfiles = []
     retfolders = []
-    for root, folders, files in os.walk(folder_path):
-        for file in files:
-            retfiles.append(os.path.join(root, file))
-        for folder in folders:
-            retfolders.append(os.path.join(root, folder))
-    return retfolders, retfiles
+    for entry in folder_path.rglob("*"):
+        if entry.is_file():
+            retfiles.append(entry)
+        elif entry.is_dir():
+            retfolders.append(entry)
+    return [retfolder.name for retfolder in retfolders], [retfile.name for retfile in retfiles]
 
 def read_json_file(file_path):
     """Returns a dict of the json"""
@@ -107,10 +108,11 @@ def get_type(json_data):
     
     return type
 
-def unzip_datapack(zip, extracted):
+
+def unzip_datapack(zip_path, extracted):
     """Unzips the zip."""
     # Check if folder already exists
-    if os.path.exists(extracted):
+    if extracted.exists():
         answer = input(f"Folder '{extracted}' already exists. Overwrite? (y/n): ").strip().lower()
         if answer != "y":
             print("Extraction canceled.")
@@ -118,11 +120,12 @@ def unzip_datapack(zip, extracted):
         shutil.rmtree(extracted)  # remove old folder
     # Unzip
     try:
-        with zipfile.ZipFile(zip, "r") as zip_ref:
+        with zipfile.ZipFile(zip_path) as zip_ref:
             zip_ref.extractall(extracted)
-        print(f"Extracted '{zip}' into '{extracted}'")
+        print(f"Extracted '{zip_path}' into '{extracted}'")
     except zipfile.BadZipFile:
-        print(f"'{zip}' is not a valid ZIP file")
+        print(f"'{zip_path}' is not a valid ZIP file")
+
 
 def get_namespaces(folder_path):
     folders, _ = get_items_from_folder(folder_path)
@@ -454,7 +457,7 @@ def fix_attribute_modifier(trace, json_data):
 def fix_attributed_attribute_modifier(trace, json_data):
     fix_attribute(trace, json_data)
     if not "id" in json_data:
-        id = trace["namespace"] + ":" + os.path.basename(trace["file"]).removesuffix(".json")
+        id = trace["namespace"] + ":" + Path(trace["file"]).stem
         json_data["id"] = id
         log("INFO", trace, "Added id " + id + " to attributed attribute modifier")
     fix_operation(trace, json_data)
@@ -639,12 +642,13 @@ def fix_power(trace, json_data):
         json_data["condition"] = condition
     if type == "origins:overlay":
         if "texture" in json_data:
-            #path = os.path(json_data["texture"])
-            #namespace = path.parts[1]
-            #name = path.stem
-            #id = f"{namespace}:{name}"
-            #json_data["texture"] = id
-            #log("INFO", trace, "Renamed location of texture to " + id + ", make sure the texture is in assets/" + namespace + "/textures/overlay/sprites/" + name + ".png")
+            # TODO: Make this commented code use pathlib Paths once it's usable (?)
+            # path = os.path(json_data["texture"])
+            # namespace = path.parts[1]
+            # name = path.stem
+            # id = f"{namespace}:{name}"
+            # json_data["texture"] = id
+            # log("INFO", trace, "Renamed location of texture to " + id + ", make sure the texture is in assets/" + namespace + "/textures/overlay/sprites/" + name + ".png")
             log("ERROR", trace, "Overlay texture change not implemented (if even necessary)")
 
     iterate_through_fields(trace.copy(), type, json_data, docpowers.powers)
@@ -664,8 +668,11 @@ def fix_power(trace, json_data):
         json_data = rename_key(json_data, "group", "tag")
 
 def update_powers(trace, folder_path):
-    _, files = get_items_from_all_folders(folder_path)
+    files = folder_path.rglob('*')
     for file in files:
+        if not file.is_file():
+            continue
+
         trace["file"] = file
         json_data = read_json_file(file)
 
@@ -703,7 +710,7 @@ def fix_icon(trace, origin):
     return origin
 
 def update_origins(trace, folder_path):
-    _, files = get_items_from_all_folders(folder_path)
+    files = [file for file in folder_path.rglob('*') if file.is_file()]
     for file in files:
         trace["file"] = file
         origin = read_json_file(file)
@@ -713,89 +720,81 @@ def update_origins(trace, folder_path):
 def update_folders(trace, path):
     folders, _ = get_items_from_folder(path)
     if "tags" in folders:
-        tagfolder = os.path.join(path, "tags")
+        tagfolder = path / "tags"
         tagfolders, _ = get_items_from_folder(tagfolder)
         if "items" in tagfolders:
-            os.rename(os.path.join(tagfolder, "items"), os.path.join(tagfolder, "item"))
+            (tagfolder / "items").rename(tagfolder / "item")
             log("INFO", trace, "Renamed folder tags/items to tags/item")
         if "blocks" in tagfolders:
-            os.rename(os.path.join(tagfolder, "blocks"), os.path.join(tagfolder, "block"))
+            (tagfolder / "blocks").rename(tagfolder / "block")
             log("INFO", trace, "Renamed folder tags/blocks to tags/block")
         if "entity_types" in tagfolders:
-            os.rename(os.path.join(tagfolder, "entity_types"), os.path.join(tagfolder, "entity_type"))
+            (tagfolder / "entity_types").rename(tagfolder / "entity_type")
             log("INFO", trace, "Renamed folder tags/entity_types to tags/entity_type")
         if "fluids" in tagfolders:
-            os.rename(os.path.join(tagfolder, "fluids"), os.path.join(tagfolder, "fluid"))
+            (tagfolder / "fluids").rename(tagfolder / "fluid")
             log("INFO", trace, "Renamed folder tags/fluids to tags/fluid")
         if "game_events" in tagfolders:
-            os.rename(os.path.join(tagfolder, "game_events"), os.path.join(tagfolder, "game_event"))
+            (tagfolder / "game_events").rename(tagfolder / "game_event")
             log("INFO", trace, "Renamed folder tags/game_events to tags/game_event")
         if "functions" in tagfolders:
-            os.rename(os.path.join(tagfolder, "functions"), os.path.join(tagfolder, "function"))
+            (tagfolder / "functions").rename(tagfolder / "function")
             log("INFO", trace, "Renamed folder tags/functions to tags/function")
     if "structures" in folders:
-        os.rename(os.path.join(path, "structures"), os.path.join(path, "structure"))
+        (path / "structures").rename(path / "structure")
         log("INFO", trace, "Renamed folder structures to structure")
     if "advancements" in folders:
-        os.rename(os.path.join(path, "advancements"), os.path.join(path, "advancement"))
+        (path / "advancements").rename(path / "advancement")
         log("INFO", trace, "Renamed folder advancements to advancement")
     if "recipes" in folders:
-        os.rename(os.path.join(path, "recipes"), os.path.join(path, "recipe"))
+        (path / "recipes").rename(path / "recipe")
         log("INFO", trace, "Renamed folder recipes to recipe")
     if "loot_tables" in folders:
-        os.rename(os.path.join(path, "loot_tables"), os.path.join(path, "loot_table"))
+        (path / "loot_tables").rename(path / "loot_table")
         log("INFO", trace, "Renamed folder loot_tables to loot_table")
     if "predicates" in folders:
-        os.rename(os.path.join(path, "predicates"), os.path.join(path, "predicate"))
+        (path / "predicates").rename(path / "predicate")
         log("INFO", trace, "Renamed folder predicates to predicate")
     if "item_modifiers" in folders:
-        os.rename(os.path.join(path, "item_modifiers"), os.path.join(path, "item_modifier"))
+        (path / "item_modifiers").rename(path / "item_modifier")
         log("INFO", trace, "Renamed folder item_modifiers to item_modifier")
     if "functions" in folders:
-        os.rename(os.path.join(path, "functions"), os.path.join(path, "function"))
+        (path / "functions").rename(path / "function")
         log("INFO", trace, "Renamed folder functions to function")
 
 def start_updating(folder_path):
     if not is_datapack_valid(folder_path):
         return
-    data_path = os.path.join(folder_path,"data")
+    data_path = folder_path / "data"
     namespaces = get_namespaces(data_path)
-    trace = {}
-    trace["data_folder"] = data_path
-    
+    trace = {"data_folder": data_path}
+
     # Update each namespace
     for namespace in namespaces:
-        path = os.path.join(data_path, namespace)
+        path = data_path / namespace
         trace["namespace"] = namespace
-        update_powers(trace.copy(), os.path.join(path,"powers"))
-        update_origins(trace.copy(), os.path.join(path,"origins"))
+        update_powers(trace.copy(), path / "powers")
+        update_origins(trace.copy(), path / "origins")
         update_folders(trace.copy(), path)
 
 def open_datapack():
     answer = input("Is the datapack zipped? (Y/N)\n> ").lower().strip()
     if answer == "y":
-        folder = filedialog.askopenfilename(title="Select datapack ZIP File", filetypes={('ZIP File', '.zip')})
+        folder = Path(filedialog.askopenfilename(title="Select datapack ZIP File", filetypes={('ZIP File', '.zip')}))
         is_zip = True
     else:
-        folder = filedialog.askdirectory(title="Select folder to create a symlink to")
+        folder = Path(filedialog.askdirectory(title="Select folder to create a symlink to"))
         is_zip = False
 
     if is_zip:
         zip_path = folder
-        folder, _ = os.path.splitext(folder)
+        folder = folder.parent / folder.stem
         unzip_datapack(zip_path, folder)
+
     # Try opening the folder
-    if os.path.isdir(folder):
+    if folder.is_dir():
         start_updating(folder)
-    # Check for zip again
-    else:
-        zip_path = f"{folder}.zip"
-        if os.path.isfile(zip_path):
-            unzip_datapack(zip_path, folder)
-            if os.path.isdir(folder):
-                start_updating(folder)
-        else:
-            print("Invalid folder path.")
+
 
 if __name__ == "__main__":
     open_datapack()
